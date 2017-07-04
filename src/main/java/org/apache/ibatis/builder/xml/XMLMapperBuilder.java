@@ -113,67 +113,65 @@ public class XMLMapperBuilder extends BaseBuilder {
             if (namespace == null || namespace.equals("")) {
                 throw new BuilderException("Mapper's namespace cannot be empty");
             }
-            
+
             builderAssistant.setCurrentNamespace(namespace);
             cacheRefElement(context.evalNode("cache-ref"));
             cacheElement(context.evalNode("cache"));
-            //start
-            buildDynamicSqlElementFromEntity(namespace,context);
-            //end
+            // start
+            buildDynamicSqlElementFromEntity(namespace, context);
+            // end
             sqlElement(context.evalNodes("/mapper/sql"));
-            
+
             buildStatementFromContext(context.evalNodes("select|insert|update|delete"));
 
         } catch (Exception e) {
             throw new BuilderException("Error parsing Mapper XML. Cause: " + e, e);
         }
     }
-    
-    
-    
-    private void buildDynamicSqlElementFromEntity(String namespace,XNode context) throws Exception {
+
+    private void buildDynamicSqlElementFromEntity(String namespace, XNode context) throws Exception {
         Class<?> mapperClass = Class.forName(namespace);
         Class<?> entityClass = GenericsUtils.getSuperInterfaceGenricType(mapperClass);
-        if(entityClass.isAssignableFrom(Object.class)) {
+        if (entityClass.isAssignableFrom(Object.class)) {
             parameterMapElement(context.evalNodes("/mapper/parameterMap"));
             resultMapElements(context.evalNodes("/mapper/resultMap"));
             return;
         }
-        parameterMapElement(context.evalNodes("/mapper/parameterMap"));
-        resultMapElements(context.evalNodes("/mapper/resultMap"));
-        //start
+        // start
         Config config = new Config();
         config.setEnableMethodAnnotation(true);
         EntityHelper.initEntityNameMap(entityClass, config);
-        
-        //resultMap
+
+        // resultMap
         String baseResultMap = MySqlHelper.baseResultMap(entityClass);
         XPathParser parserBaseResultMap = new XPathParser(baseResultMap);
         resultMapElements(parserBaseResultMap.evalNodes("resultMap"));
-        
-        //id,abnormal_count AS abnormalCount,
+
+        // id,abnormal_count AS abnormalCount,
         String selectColumns = EntityHelper.getSelectColumns(entityClass);
         String warpSelectColumns = MySqlHelper.warpBySqlElement(selectColumns, "base_column_list");
         XPathParser parserSelectColumns = new XPathParser(warpSelectColumns);
         sqlElement(parserSelectColumns.evalNodes("sql"));
-        
-        String whereAllIfColumns = SqlHelper.whereAllIfColumns(entityClass,true);
+
+        String whereAllIfColumns = SqlHelper.whereAllIfColumns(entityClass, true);
+        whereAllIfColumns = StringUtils.replaceIgnoreCase(whereAllIfColumns, "<where>", "");
+        whereAllIfColumns = StringUtils.replaceIgnoreCase(whereAllIfColumns, "</where>", "");
         String warpWhereAllIfColumns = MySqlHelper.warpBySqlElement(whereAllIfColumns, "base_query_params");
         XPathParser parserWhereAllIfColumns = new XPathParser(warpWhereAllIfColumns);
         sqlElement(parserWhereAllIfColumns.evalNodes("sql"));
-        
-        String selectCount = SqlHelper.selectCount(entityClass);//SELECT COUNT(id) 
+
+        String selectCount = SqlHelper.selectCount(entityClass);// SELECT COUNT(id)
         String warpSelectCount = MySqlHelper.warpBySqlElement(selectCount, "select_count");
         XPathParser parserSelectCount = new XPathParser(warpSelectCount);
         sqlElement(parserSelectCount.evalNodes("sql"));
-        
-        //id,abnormal_count AS abnormalCount,
+
+        // id,abnormal_count,
         String selectAllColumns = SqlHelper.selectAllColumns(entityClass);
         String warpSelectAllColumns = MySqlHelper.warpBySqlElement(selectAllColumns, "select_column_list");
         XPathParser parserSelectAllColumns = new XPathParser(warpSelectAllColumns);
         sqlElement(parserSelectAllColumns.evalNodes("sql"));
-        
-        String updateSetColumns = SqlHelper.updateSetColumns(entityClass, null, true, true);//with select
+
+        String updateSetColumns = SqlHelper.updateSetColumns(entityClass, null, true, true);// with select
         String warpUpdateSetColumns = MySqlHelper.warpBySqlElement(updateSetColumns, "update_column_list");
         XPathParser parserUpdateSetColumns = new XPathParser(warpUpdateSetColumns);
         sqlElement(parserUpdateSetColumns.evalNodes("sql"));

@@ -26,8 +26,8 @@
 		<relativePath />
 	</parent> -->
 
-	<groupId>com.yao</groupId>
-	<artifactId>mybatis</artifactId>
+	<groupId>org.mybatis</groupId>
+	<artifactId>mybatis-enhancer</artifactId>
 	<version>3.4.5-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
