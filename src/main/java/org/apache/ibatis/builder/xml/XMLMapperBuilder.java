@@ -175,6 +175,10 @@ public class XMLMapperBuilder extends BaseBuilder {
         String warpUpdateSetColumns = MySqlHelper.warpBySqlElement(updateSetColumns, "update_column_list");
         XPathParser parserUpdateSetColumns = new XPathParser(warpUpdateSetColumns);
         sqlElement(parserUpdateSetColumns.evalNodes("sql"));
+        
+        String sqlRestraint = MySqlHelper.sqlRestraint();
+        XPathParser parserSqlRestraint = new XPathParser(sqlRestraint);
+        sqlElement(parserSqlRestraint.evalNodes("sql"));
     }
 
     private void buildStatementFromContext(List<XNode> list) {

@@ -22,13 +22,16 @@ import tk.mybatis.mapper.mapperhelper.EntityHelper;
 import tk.mybatis.mapper.mapperhelper.SqlHelper;
 
 public class MySqlHelper extends SqlHelper {
-    
-    
-    public static String warpBySqlElement(String xmlString,String id) {
-        return "<sql id=\""+id+"\">" + xmlString +"</sql>";
+
+    public static String warpBySqlElement(String xmlString, String id) {
+        return "<sql id=\"" + id + "\">" + xmlString + "</sql>";
     }
-    
-    
+
+    public static String sqlRestraint() {
+        String sqlRestraint = "<sql id=\"sql_restraint\"><if test=\"orderBy != null\">order by ${orderBy}</if><choose><when test=\"limit != null and limit gt 0 \">limit<choose><when test=\"offset != null and offset gt 0 \">#{offset},#{limit}</when><otherwise>0,#{limit}</otherwise></choose></when><otherwise>limit 0,100</otherwise></choose></sql>";
+        return sqlRestraint;
+    }
+
     /**
      * where所有列的条件，会判断是否!=null
      *
@@ -37,22 +40,22 @@ public class MySqlHelper extends SqlHelper {
      */
     public static String baseResultMap(Class<?> entityClass) {
         StringBuilder sql = new StringBuilder();
-        sql.append("<resultMap id=\"BaseResultMap\" type=\""+entityClass.getName()+"\">");
-        //获取全部列
+        sql.append("<resultMap id=\"BaseResultMap\" type=\"" + entityClass.getName() + "\">");
+        // 获取全部列
         Set<EntityColumn> columnList = EntityHelper.getColumns(entityClass);
-        //当某个列有主键策略时，不需要考虑他的属性是否为空，因为如果为空，一定会根据主键策略给他生成一个值
+        // 当某个列有主键策略时，不需要考虑他的属性是否为空，因为如果为空，一定会根据主键策略给他生成一个值
         for (EntityColumn column : columnList) {
-            initResultMapForColumn(column,sql);
+            initResultMapForColumn(column, sql);
         }
         sql.append("</resultMap>");
         return sql.toString();
     }
-    
-    private static void initResultMapForColumn(EntityColumn column,StringBuilder sql) {
+
+    private static void initResultMapForColumn(EntityColumn column, StringBuilder sql) {
         if (column.isId()) {
-            sql.append("<id column=\""+column.getColumn()+"\" property=\""+column.getProperty()+"\"/>");   
-        }else {
-            sql.append("<result column=\""+column.getColumn()+"\" property=\""+column.getProperty()+"\"/>");
+            sql.append("<id column=\"" + column.getColumn() + "\" property=\"" + column.getProperty() + "\"/>");
+        } else {
+            sql.append("<result column=\"" + column.getColumn() + "\" property=\"" + column.getProperty() + "\"/>");
         }
     }
 
